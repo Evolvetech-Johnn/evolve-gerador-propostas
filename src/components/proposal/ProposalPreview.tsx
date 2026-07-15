@@ -58,6 +58,7 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             )}
           </div>
         );
+
       case "metodo":
         return (
           <div className="a4-page">
@@ -93,6 +94,7 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             </div>
           </div>
         );
+
       case "valuestack":
         return (
           <div className="a4-page">
@@ -147,6 +149,7 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             </div>
           </div>
         );
+
       case "prova":
         return (
           <div className="a4-page">
@@ -193,33 +196,77 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             )}
           </div>
         );
-      case "investimento":
+
+      case "investimento": {
+        // Valor percebido = soma de todos os deliverables (incluindo bônus)
+        const perceivedValue = valueStackSum(proposal);
+        // Exibir campo "De" somente se showFromPrice=true e há valor percebido
+        const hasDiscount = proposal.showFromPrice && perceivedValue > 0;
+        // Garantia só aparece se habilitada E com texto não vazio
+        const hasGuarantee = proposal.guaranteeEnabled && proposal.guaranteeText.trim() !== "";
+
         return (
           <div className="a4-page paper-radial">
             <SectionHeader number="05" title="Investimento" />
-            <div className="text-sm mb-2" style={{ color: "var(--ink-dim)" }}>De</div>
-            <div className="text-5xl font-bold line-through mb-6" style={{ color: "var(--ink-dim)" }}>
-              {proposal.fullPriceText}
-            </div>
+
+            {/* Campo "De" — valor percebido (todos os deliverables), só quando configurado */}
+            {hasDiscount && (
+              <>
+                <div className="text-sm mb-2" style={{ color: "var(--ink-dim)" }}>De</div>
+                <div className="text-5xl font-bold line-through mb-6" style={{ color: "var(--ink-dim)" }}>
+                  {fmtBRL(perceivedValue)}
+                </div>
+              </>
+            )}
+
+            {/* Card principal de investimento */}
             <div className="invest-card rounded-2xl p-8 border mb-6" style={{ borderColor: "var(--accent)" }}>
               <div className="text-sm mb-2" style={{ color: "var(--ink-dim)" }}>Investimento</div>
-              <div className="text-5xl font-bold wordmark" style={{ color: "var(--accent)" }}>
-                {proposal.payMode === "cartao"
-                  ? `${proposal.cardCount}x de ${fmtBRL(proposal.cardInstallment)}`
-                  : proposal.payMode === "pix"
-                  ? fmtBRL(proposal.pixValue * (1 - proposal.pixDiscount / 100))
-                  : `${proposal.boletoCount}x de ${fmtBRL(proposal.boletoInstallment)}`}
-              </div>
-              {proposal.payMode === "pix" && proposal.pixDiscount > 0 && (
-                <div className="mt-2 chip-accent px-3 py-1 rounded-full text-sm border inline-block">
-                  -{proposal.pixDiscount}% para pix à vista
+
+              {/* Modo Mensal: exibe apenas o valor/mês, sem parcelamento */}
+              {proposal.payMode === "mensal" && (
+                <div className="text-5xl font-bold wordmark" style={{ color: "var(--accent)" }}>
+                  {fmtBRL(proposal.monthlyValue)}
+                  <span className="text-2xl font-medium">/mês</span>
                 </div>
               )}
+
+              {/* Modo Cartão: parcelas */}
+              {proposal.payMode === "cartao" && (
+                <div className="text-5xl font-bold wordmark" style={{ color: "var(--accent)" }}>
+                  {proposal.cardCount}x de {fmtBRL(proposal.cardInstallment)}
+                </div>
+              )}
+
+              {/* Modo Pix: valor com desconto */}
+              {proposal.payMode === "pix" && (
+                <>
+                  <div className="text-5xl font-bold wordmark" style={{ color: "var(--accent)" }}>
+                    {fmtBRL(proposal.pixValue * (1 - proposal.pixDiscount / 100))}
+                  </div>
+                  {proposal.pixDiscount > 0 && (
+                    <div className="mt-2 chip-accent px-3 py-1 rounded-full text-sm border inline-block">
+                      -{proposal.pixDiscount}% para pix à vista
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Modo Boleto: parcelas */}
+              {proposal.payMode === "boleto" && (
+                <div className="text-5xl font-bold wordmark" style={{ color: "var(--accent)" }}>
+                  {proposal.boletoCount}x de {fmtBRL(proposal.boletoInstallment)}
+                </div>
+              )}
+
+              {/* Valor por dia — mensal: /30 | demais: /365 */}
               <div className="mt-4 chip px-4 py-2 rounded-full border inline-block text-sm">
-                Menos de {fmtBRL(pricePerDay(proposal))} por dia
+                Apenas {fmtBRL(pricePerDay(proposal))} por dia
               </div>
             </div>
-            {proposal.guaranteeEnabled && (
+
+            {/* Garantia — oculta quando texto vazio */}
+            {hasGuarantee && (
               <div className="paper-2 rounded-xl p-6 border flex items-start gap-4 mb-6" style={{ borderColor: "var(--border-soft)" }}>
                 <ShieldCheck size={28} style={{ color: "var(--accent)" }} />
                 <div>
@@ -230,6 +277,8 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
                 </div>
               </div>
             )}
+
+            {/* Validade */}
             <div className="paper-2 rounded-xl p-6 border" style={{ borderColor: "var(--border-soft)" }}>
               <div className="text-sm" style={{ color: "var(--ink-dim)" }}>Validade</div>
               <div className="font-bold mt-1">
@@ -241,6 +290,8 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             </div>
           </div>
         );
+      }
+
       case "fechamento":
         return (
           <div className="a4-page paper-radial flex flex-col justify-between">
@@ -274,6 +325,7 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             </div>
           </div>
         );
+
       default:
         return null;
     }

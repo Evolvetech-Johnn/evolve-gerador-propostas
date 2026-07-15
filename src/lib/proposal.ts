@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 
 export type ThemeId = "dark-gold" | "dark-indigo" | "light-editorial" | "minimal-mono";
 export type FontPairId = "modern" | "editorial" | "classic" | "tech" | "minimal" | "serif-bold";
-export type PayMode = "cartao" | "pix" | "boleto";
+export type PayMode = "mensal" | "cartao" | "pix" | "boleto";
 export type SectionId = "diagnostico" | "metodo" | "valuestack" | "prova" | "investimento" | "fechamento";
 
 export interface MethodStep { id: string; title: string }
@@ -43,6 +43,8 @@ export interface Proposal {
   metricsLine: string;
   testimonials: Testimonial[];
   payMode: PayMode;
+  monthlyValue: number;
+  showFromPrice: boolean;
   cardInstallment: number;
   cardCount: number;
   pixValue: number;
@@ -52,7 +54,6 @@ export interface Proposal {
   guaranteeEnabled: boolean;
   guaranteeText: string;
   urgencyReason: string;
-  fullPriceText: string;
   closingMessage: string;
   ctaText: string;
 }
@@ -61,16 +62,24 @@ export const fmtBRL = (n: number): string => new Intl.NumberFormat("pt-BR", { st
 export const fmtDateLong = (iso: string): string => new Date(iso).toLocaleDateString("pt-BR", { weekday: undefined, year: "numeric", month: "long", day: "numeric" });
 export const addDaysIso = (iso: string, days: number): string => { const d = new Date(iso); d.setDate(d.getDate() + days); return d.toISOString().split('T')[0]; }
 export const todayIso = (): string => new Date().toISOString().split('T')[0];
+/** Soma todos os deliverables (incluindo bônus) — representa o "valor percebido" */
 export const valueStackSum = (p: Proposal): number => p.deliverables.reduce((sum, d) => sum + d.value, 0);
 
+/** Soma apenas os deliverables não-bônus — representa o valor efetivamente cobrado (base mensal) */
+export const serviceSum = (p: Proposal): number => p.deliverables.filter((d) => !d.bonus).reduce((sum, d) => sum + d.value, 0);
+
 export const realPrice = (p: Proposal): number => {
+  if (p.payMode === "mensal") return p.monthlyValue;
   if (p.payMode === "cartao") return p.cardInstallment * p.cardCount;
   if (p.payMode === "pix") return p.pixValue * (1 - p.pixDiscount / 100);
   if (p.payMode === "boleto") return p.boletoInstallment * p.boletoCount;
   return 0;
 }
 
-export const pricePerDay = (p: Proposal): number => realPrice(p) / 365;
+export const pricePerDay = (p: Proposal): number => {
+  if (p.payMode === "mensal") return p.monthlyValue / 30;
+  return realPrice(p) / 365;
+};
 
 const defaultSections: Section[] = [
   { id: "diagnostico", enabled: true },
@@ -119,12 +128,12 @@ const agencia = (): Omit<Proposal, "id" | "createdAt" | "updatedAt"> => ({
   testimonials: [
     { id: nanoid(), name: "Carlos Mendes", company: "Café & Cia", result: "2,8x em 90 dias", text: "Tínhamos tentado 3 agências antes. A Evolve foi a única que entregou o que prometeu." }
   ],
-  payMode: "cartao", cardInstallment: 2490, cardCount: 12,
+  payMode: "cartao", monthlyValue: 0, showFromPrice: true,
+  cardInstallment: 2490, cardCount: 12,
   pixValue: 24900, pixDiscount: 10,
   boletoInstallment: 2590, boletoCount: 12,
   guaranteeEnabled: true, guaranteeText: "Se em 30 dias não ver progresso real, devolvemos o seu dinheiro.",
   urgencyReason: "trabalhamos com no máximo 8 clientes por trimestre para manter a qualidade",
-  fullPriceText: "R$ 28.000",
   closingMessage: "Essa proposta foi desenhada sob medida para Loja Moderna. O próximo passo é um só: confirmar de acordo abaixo.",
   ctaText: "VAMOS COMEÇAR"
 });
@@ -167,12 +176,12 @@ const consultoria = (): Omit<Proposal, "id" | "createdAt" | "updatedAt"> => ({
   testimonials: [
     { id: nanoid(), name: "Fernanda Lima", company: "Logistica Rápida", result: "-31% de custos", text: "O resultado veio mais rápido do que esperávamos. Excelente trabalho." }
   ],
-  payMode: "pix", cardInstallment: 3490, cardCount: 12,
+  payMode: "pix", monthlyValue: 0, showFromPrice: true,
+  cardInstallment: 3490, cardCount: 12,
   pixValue: 36000, pixDiscount: 12,
   boletoInstallment: 3590, boletoCount: 12,
-  guaranteeEnabled: true, guaranteeText: "Garantia de satisfação: se não ficar feliz com o diagnóstico, não paga.",
+  guaranteeEnabled: true, guaranteeText: "Se em 30 dias não ver progresso real, devolvemos o investimento.",
   urgencyReason: "temos capacidade para apenas 4 projetos simultâneos",
-  fullPriceText: "R$ 42.000",
   closingMessage: "Essa proposta foi desenhada sob medida para Inova Solutions. O próximo passo é um só: confirmar de acordo abaixo.",
   ctaText: "QUERO OTIMIZAR"
 });
@@ -215,12 +224,12 @@ const juridico = (): Omit<Proposal, "id" | "createdAt" | "updatedAt"> => ({
   testimonials: [
     { id: nanoid(), name: "Roberto Nunes", company: "Comercial Nunes", result: "Zero processos em 2 anos", text: "Desde que trabalhamos com a Dra. Carla, dormimos tranquilos." }
   ],
-  payMode: "boleto", cardInstallment: 4900, cardCount: 12,
+  payMode: "boleto", monthlyValue: 0, showFromPrice: true,
+  cardInstallment: 4900, cardCount: 12,
   pixValue: 49000, pixDiscount: 8,
   boletoInstallment: 4900, boletoCount: 12,
   guaranteeEnabled: false, guaranteeText: "",
   urgencyReason: "a agenda é limitada a 15 clientes mensais para atendimento de qualidade",
-  fullPriceText: "R$ 60.000",
   closingMessage: "Essa proposta foi desenhada sob medida para Construtora Horizonte. O próximo passo é um só: confirmar de acordo abaixo.",
   ctaText: "GARANTIR SEGURANÇA"
 });
@@ -263,12 +272,12 @@ const saude = (): Omit<Proposal, "id" | "createdAt" | "updatedAt"> => ({
   testimonials: [
     { id: nanoid(), name: "Dra. Juliana", company: "Clínica Vida Plena", result: "+72% em 6 meses", text: "O método funcionou muito melhor do que esperávamos." }
   ],
-  payMode: "cartao", cardInstallment: 2990, cardCount: 12,
+  payMode: "cartao", monthlyValue: 0, showFromPrice: true,
+  cardInstallment: 2990, cardCount: 12,
   pixValue: 29900, pixDiscount: 10,
   boletoInstallment: 3090, boletoCount: 12,
   guaranteeEnabled: true, guaranteeText: "Se em 4 meses o fluxo não aumentar, continuamos trabalhando gratuitamente até aumentar.",
   urgencyReason: "atendemos apenas 6 clínicas por semestre para manter a qualidade",
-  fullPriceText: "R$ 37.000",
   closingMessage: "Essa proposta foi desenhada sob medida para Clínica Bem Estar. O próximo passo é um só: confirmar de acordo abaixo.",
   ctaText: "AUMENTAR FLUXO"
 });
@@ -311,12 +320,12 @@ const tech = (): Omit<Proposal, "id" | "createdAt" | "updatedAt"> => ({
   testimonials: [
     { id: nanoid(), name: "Luiza Oliveira", company: "Fintech Y", result: "Lançamos em 11 semanas", text: "Equipe fantástica. O código está impecável." }
   ],
-  payMode: "pix", cardInstallment: 5900, cardCount: 12,
+  payMode: "pix", monthlyValue: 0, showFromPrice: true,
+  cardInstallment: 5900, cardCount: 12,
   pixValue: 65000, pixDiscount: 8,
   boletoInstallment: 6000, boletoCount: 12,
   guaranteeEnabled: true, guaranteeText: "Entregamos o MVP no prazo ou devolvemos 50%.",
   urgencyReason: "aceitamos apenas 2 projetos de desenvolvimento por mês",
-  fullPriceText: "R$ 71.000",
   closingMessage: "Essa proposta foi desenhada sob medida para StartupX. O próximo passo é um só: confirmar de acordo abaixo.",
   ctaText: "INICIAR PROJETO"
 });
@@ -359,12 +368,12 @@ const infoproduto = (): Omit<Proposal, "id" | "createdAt" | "updatedAt"> => ({
   testimonials: [
     { id: nanoid(), name: "Renata Carvalho", company: "Nutri Renata", result: "R$ 117k no 1º lançamento", text: "O Thiago me guiou do zero ao lançamento. Sem ele, eu não teria conseguido." }
   ],
-  payMode: "cartao", cardInstallment: 2990, cardCount: 12,
+  payMode: "cartao", monthlyValue: 0, showFromPrice: true,
+  cardInstallment: 2990, cardCount: 12,
   pixValue: 29900, pixDiscount: 12,
   boletoInstallment: 3090, boletoCount: 12,
   guaranteeEnabled: true, guaranteeText: "Se você aplicar tudo e não fizer pelo menos 30 vendas, continuamos trabalhando juntos até fazer.",
   urgencyReason: "abrimos apenas 5 vagas por mês para acompanhamento de lançamento",
-  fullPriceText: "R$ 35.000",
   closingMessage: "Essa proposta foi desenhada sob medida para Autoridade X. O próximo passo é um só: confirmar de acordo abaixo.",
   ctaText: "LANÇAR MEU PRODUTO"
 });

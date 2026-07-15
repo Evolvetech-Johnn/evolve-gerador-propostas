@@ -563,10 +563,11 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
       </Group>
 
       <Group label="Investimento">
+        {/* Seletor de modo de pagamento */}
         <div>
           <label className="text-xs text-gray-400 mb-1 block">Forma de pagamento</label>
-          <div className="flex gap-2">
-            {(["cartao", "pix", "boleto"] as PayMode[]).map((pm) => (
+          <div className="flex flex-wrap gap-2">
+            {(["mensal", "cartao", "pix", "boleto"] as PayMode[]).map((pm) => (
               <button
                 key={pm}
                 onClick={() => set({ payMode: pm })}
@@ -574,6 +575,7 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
                   proposal.payMode === pm ? "border-white bg-gray-800" : "border-gray-700"
                 }`}
               >
+                {pm === "mensal" && "Mensal"}
                 {pm === "cartao" && "Cartão"}
                 {pm === "pix" && "Pix"}
                 {pm === "boleto" && "Boleto"}
@@ -581,6 +583,28 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
             ))}
           </div>
         </div>
+
+        {/* Campos específicos por modo */}
+        {proposal.payMode === "mensal" && (
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Valor mensal (R$)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2"
+              value={proposal.monthlyValue}
+              onChange={(e) => set({ monthlyValue: parseFloat(e.target.value || "0") })}
+            />
+            <div className="text-xs text-gray-500 mt-1">
+              Dica: soma automática dos serviços não-bônus ={" "}
+              {proposal.deliverables
+                .filter((d) => !d.bonus)
+                .reduce((s, d) => s + d.value, 0)
+                .toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </div>
+          </div>
+        )}
 
         {proposal.payMode === "cartao" && (
           <div className="grid grid-cols-2 gap-2">
@@ -606,6 +630,7 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
             </div>
           </div>
         )}
+
         {proposal.payMode === "pix" && (
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -631,6 +656,7 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
             </div>
           </div>
         )}
+
         {proposal.payMode === "boleto" && (
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -656,14 +682,33 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
           </div>
         )}
 
+        {/* Campo "De" — controla exibição do valor percebido (value stack total) */}
         <div className="flex items-center gap-2 mt-2">
           <input
             type="checkbox"
+            id="show-from-price"
+            checked={proposal.showFromPrice}
+            onChange={(e) => set({ showFromPrice: e.target.checked })}
+            className="accent-white"
+          />
+          <label htmlFor="show-from-price" className="text-sm">
+            Exibir campo "De" (valor percebido total)
+          </label>
+        </div>
+        <div className="text-xs text-gray-500 ml-5">
+          Exibe o total do value stack riscado acima do preço.
+        </div>
+
+        {/* Garantia */}
+        <div className="flex items-center gap-2 mt-3">
+          <input
+            type="checkbox"
+            id="guarantee-enabled"
             checked={proposal.guaranteeEnabled}
             onChange={(e) => set({ guaranteeEnabled: e.target.checked })}
             className="accent-white"
           />
-          <label className="text-sm">Usar garantia</label>
+          <label htmlFor="guarantee-enabled" className="text-sm">Usar garantia</label>
         </div>
         {proposal.guaranteeEnabled && (
           <div>
@@ -674,6 +719,9 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
               value={proposal.guaranteeText}
               onChange={(e) => set({ guaranteeText: e.target.value })}
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Deixe vazio para ocultar a seção de garantia na proposta.
+            </div>
           </div>
         )}
 
@@ -683,15 +731,6 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
             className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2"
             value={proposal.urgencyReason}
             onChange={(e) => set({ urgencyReason: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <label className="text-xs text-gray-400 mb-1 block">Preço riscado (texto livre)</label>
-          <input
-            className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2"
-            value={proposal.fullPriceText}
-            onChange={(e) => set({ fullPriceText: e.target.value })}
           />
         </div>
       </Group>
