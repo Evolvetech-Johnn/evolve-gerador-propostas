@@ -143,6 +143,10 @@ body {
   box-shadow: 0 30px 80px -20px rgba(0,0,0,.6);
   background: var(--paper);
   font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  lang: pt;
 }
 
 .no-break {
@@ -153,6 +157,22 @@ body {
   font-family: var(--font-heading, "Space Grotesk"), system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.03em;
+  text-align: left;
+}
+
+/* Elementos que não devem herdar o justify da .a4-page */
+.a4-page h1,
+.a4-page h2,
+.a4-page h3,
+.a4-page h4 {
+  text-align: left;
+}
+
+.a4-page .chip,
+.a4-page .chip-accent,
+.a4-page .bonus-card,
+.a4-page .invest-card {
+  text-align: left;
 }
 
 .pdf-exporting .a4-page {
