@@ -1,0 +1,183 @@
+@import "tailwindcss";
+
+:root {
+  --app-bg: #0a0b0f;
+  --paper: #12141a;
+  --paper-2: #171a22;
+  --ink: #eee9dc;
+  --ink-dim: #9a9689;
+  --accent: #d9a94a;
+  --accent-2: #7075f0;
+  --border-soft: rgba(238, 233, 220, 0.08);
+}
+
+[data-theme="dark-indigo"] {
+  --app-bg: #08080f;
+  --paper: #10121c;
+  --paper-2: #161927;
+  --ink: #ece9fc;
+  --ink-dim: #9995c0;
+  --accent: #7075f0;
+  --accent-2: #d9a94a;
+}
+
+[data-theme="light-editorial"] {
+  --app-bg: #f4f1ea;
+  --paper: #fff;
+  --paper-2: #f8f5ee;
+  --ink: #17150f;
+  --ink-dim: #6b6555;
+  --accent: #a37918;
+  --accent-2: #2d3a8c;
+}
+
+[data-theme="minimal-mono"] {
+  --app-bg: #0a0a0a;
+  --paper: #111;
+  --paper-2: #181818;
+  --ink: #f5f5f5;
+  --ink-dim: #9e9e9e;
+  --accent: #fff;
+  --accent-2: #cfcfcf;
+}
+
+#print-root[data-font="modern"] {
+  --font-heading: "Space Grotesk";
+  --font-body: "Inter";
+  --font-mono: "IBM Plex Mono";
+}
+
+#print-root[data-font="editorial"] {
+  --font-heading: "Fraunces";
+  --font-body: "Inter";
+  --font-mono: "IBM Plex Mono";
+}
+
+#print-root[data-font="classic"] {
+  --font-heading: "Playfair Display";
+  --font-body: "Lora";
+  --font-mono: "IBM Plex Mono";
+}
+
+#print-root[data-font="tech"] {
+  --font-heading: "Manrope";
+  --font-body: "Manrope";
+  --font-mono: "JetBrains Mono";
+}
+
+#print-root[data-font="minimal"] {
+  --font-heading: "Inter";
+  --font-body: "Inter";
+  --font-mono: "JetBrains Mono";
+}
+
+#print-root[data-font="serif-bold"] {
+  --font-heading: "DM Serif Display";
+  --font-body: "DM Sans";
+  --font-mono: "JetBrains Mono";
+}
+
+body {
+  background-color: var(--app-bg);
+  color: var(--ink);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.paper {
+  background-color: var(--paper);
+}
+
+.paper-2 {
+  background-color: var(--paper-2);
+}
+
+.paper-radial {
+  background-image: 
+    radial-gradient(circle at 20% -10%, color-mix(in oklab, var(--accent) 25%, transparent 100%), transparent 50%), 
+    radial-gradient(circle at 80% 110%, color-mix(in oklab, var(--accent-2) 15%, transparent 100%), transparent 50%), 
+    var(--paper);
+}
+
+.chip {
+  background-color: color-mix(in oklab, var(--accent) 12%, var(--paper) 88%);
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--paper) 70%);
+}
+
+.chip-accent {
+  background-color: color-mix(in oklab, var(--accent) 20%, transparent 80%);
+  color: var(--accent);
+  border-color: color-mix(in oklab, var(--accent) 40%, transparent 60%);
+}
+
+.dot-lead {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 8px 1px;
+  background-position: 0 50%;
+  background-repeat: repeat-x;
+}
+
+.invest-card {
+  background-image: radial-gradient(circle at 50% -20%, color-mix(in oklab, var(--accent) 10%, transparent 100%), transparent 50%);
+  box-shadow: 0 0 60px -15px color-mix(in oklab, var(--accent) 50%, transparent 50%);
+}
+
+.bonus-card {
+  border-color: color-mix(in oklab, var(--accent) 35%, transparent 65%);
+  background-color: color-mix(in oklab, var(--accent) 8%, transparent 92%);
+}
+
+.gold-check::before {
+  content: "✓";
+  color: var(--accent);
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.a4-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 22mm 20mm;
+  page-break-after: always;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,.6);
+  background: var(--paper);
+  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+}
+
+.no-break {
+  break-inside: avoid;
+}
+
+.wordmark {
+  font-family: var(--font-heading, "Space Grotesk"), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.pdf-exporting .a4-page {
+  box-shadow: none !important;
+  margin-bottom: 0 !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-root, #print-root * {
+    visibility: visible;
+  }
+  #print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
