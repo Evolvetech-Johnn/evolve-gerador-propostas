@@ -46,14 +46,19 @@ export const Wizard: React.FC<Props> = ({ isOpen, onClose }) => {
   };
 
   const handleFinish = () => {
-    if (!selectedTemplate) return;
-    const { id, createdAt, updatedAt, ...proposalData } = fromTemplate(selectedTemplate, {
-      company: companyName,
+    const template = selectedTemplate ?? "agencia";
+    const overrides: Record<string, string | undefined> = {
       accent,
       logoDataUrl: logo,
-      consultant: consultantName,
-      consultantRole: consultantRole,
-    });
+    };
+    if (companyName.trim()) overrides.company = companyName.trim();
+    if (consultantName.trim()) overrides.consultant = consultantName.trim();
+    if (consultantRole.trim()) overrides.consultantRole = consultantRole.trim();
+
+    const { id, createdAt, updatedAt, ...proposalData } = fromTemplate(
+      template,
+      overrides as Parameters<typeof fromTemplate>[1]
+    );
     const newId = create(proposalData);
     navigate({ to: "/editor/$id", params: { id: newId } });
     onClose();
