@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Proposal, ThemeId, FontPairId, PayMode } from "../../lib/proposal";
+import { compressImageToDataUrl } from "../../lib/image";
 import { useProposals } from "../../store/useProposals";
 import { ChevronDown, ChevronRight, Plus, X, ArrowLeft, Save } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -31,6 +32,7 @@ const Group: React.FC<{ label: string; children: React.ReactNode; defaultOpen?: 
 export const EditorPanel: React.FC<Props> = ({ proposal }) => {
   const { update } = useProposals();
   const set = (patch: Partial<Proposal>) => update(proposal.id, patch);
+  const [logoError, setLogoError] = useState<string | null>(null);
 
   return (
     <div className="w-full lg:w-[380px] lg:sticky lg:top-0 h-screen overflow-y-auto paper p-6">
@@ -61,15 +63,21 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
             type="file"
             accept="image/*"
             className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white"
-            onChange={(e) => {
+            onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => set({ logoDataUrl: e.target?.result as string });
-                reader.readAsDataURL(file);
+                try {
+                  setLogoError(null);
+                  const compressed = await compressImageToDataUrl(file);
+                  set({ logoDataUrl: compressed });
+                } catch (err) {
+                  console.error(err);
+                  setLogoError("Não foi possível carregar a imagem.");
+                }
               }
             }}
           />
+          {logoError && <div className="text-red-500 text-xs mt-1">{logoError}</div>}
         </div>
 
         <div>

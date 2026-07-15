@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import { Proposal } from "../lib/proposal";
+import { compressDataUrl } from "../lib/image";
 
 interface ProposalsStore {
   proposals: Record<string, Proposal>;
@@ -106,6 +107,25 @@ export const useProposals = create<ProposalsStore>()(
             // Se falhar a leitura legada, ignora silenciosamente
           }
         }
+
+        // Rotina de auto-encolhimento assíncrono para logos antigas
+        setTimeout(() => {
+          (async () => {
+            const currentProposals = useProposals.getState().proposals;
+            for (const [id, p] of Object.entries(currentProposals)) {
+              if (p.logoDataUrl && p.logoDataUrl.length > 140_000) {
+                try {
+                  const compressed = await compressDataUrl(p.logoDataUrl);
+                  if (compressed.length < p.logoDataUrl.length) {
+                    useProposals.getState().update(id, { logoDataUrl: compressed });
+                  }
+                } catch (err) {
+                  console.error(`Failed to compress logo for proposal ${id}`, err);
+                }
+              }
+            }
+          })();
+        }, 0);
       },
     }
   )

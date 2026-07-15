@@ -21,10 +21,18 @@ function Home() {
   const { create } = useProposals();
   const navigate = useNavigate();
 
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const handleTemplateClick = (key: keyof typeof templates) => {
-    const { id, createdAt, updatedAt, ...proposalData } = fromTemplate(key);
-    const newId = create(proposalData);
-    navigate({ to: '/editor/$id', params: { id: newId } });
+    try {
+      setErrorMsg(null);
+      const { id, createdAt, updatedAt, ...proposalData } = fromTemplate(key);
+      const newId = create(proposalData);
+      navigate({ to: '/editor/$id', params: { id: newId } });
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Não foi possível salvar a proposta. O armazenamento local pode estar cheio — tente remover propostas antigas e tente novamente.");
+    }
   }
 
   return (
@@ -36,6 +44,12 @@ function Home() {
           </div>
         </div>
       </header>
+
+      {errorMsg && (
+        <div className="max-w-4xl mx-auto mb-8 bg-red-500/10 border-l-4 border-red-500 text-red-500 p-4 text-sm rounded">
+          {errorMsg}
+        </div>
+      )}
 
       <main className="max-w-4xl mx-auto text-center">
         <div className="mb-12">
