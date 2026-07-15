@@ -1,4 +1,4 @@
-import { createRoute, useNavigate, Link, useParams } from '@tanstack/react-router'
+import { createRoute, Link } from '@tanstack/react-router'
 import { useProposals } from '../store/useProposals';
 import { EditorPanel } from '../components/proposal/EditorPanel';
 import { ProposalPreview } from '../components/proposal/ProposalPreview';
@@ -17,7 +17,6 @@ function Editor() {
   const { id } = editorRoute.useParams();
   const { proposals } = useProposals();
   const proposal = proposals[id];
-  const navigate = useNavigate();
   const [mobileMode, setMobileMode] = useState<'edit' | 'preview'>('edit');
   const [exporting, setExporting] = useState(false);
 

@@ -5,7 +5,6 @@ import {
   fmtDateLong,
   addDaysIso,
   valueStackSum,
-  realPrice,
   pricePerDay,
   SectionId,
 } from "../../lib/proposal";
@@ -82,7 +81,7 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
             </div>
             <div className="relative">
               <div className="absolute left-3 top-0 bottom-0 w-px" style={{ background: "var(--border-soft)" }}></div>
-              {proposal.milestones.map((milestone, i) => (
+              {proposal.milestones.map((milestone) => (
                 <div key={milestone.id} className="flex gap-4 items-start mb-4">
                   <div
                     className="w-6 h-6 rounded-full border-2 z-10"

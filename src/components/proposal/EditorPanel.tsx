@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Proposal, SectionId, ThemeId, FontPairId, PayMode, templates } from "../../lib/proposal";
+import { Proposal, ThemeId, FontPairId, PayMode } from "../../lib/proposal";
 import { useProposals } from "../../store/useProposals";
 import { ChevronDown, ChevronRight, Plus, X, ArrowLeft, Save } from "lucide-react";
 import { Link } from "@tanstack/react-router";
