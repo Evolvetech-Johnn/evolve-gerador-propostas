@@ -300,7 +300,7 @@ export const ProposalPreview: React.FC<Props> = ({ proposal }) => {
               <p className="text-xl leading-relaxed mb-10" style={{ color: "var(--ink)" }}>
                 {proposal.closingMessage}
               </p>
-              <div className="inline-block chip-accent text-xl px-8 py-4 rounded-full border font-bold">
+              <div className="inline-block chip-accent text-xl px-8 py-4 rounded-full border font-bold whitespace-nowrap">
                 {proposal.ctaText}
               </div>
             </div>
