@@ -29,6 +29,26 @@ export interface Qualificacao {
   motivos: string[];
 }
 
+export interface Lacuna {
+  id: string;
+  titulo: string;
+  descricao: string;
+  impacto: string;
+  servico: string;
+  peso: number;
+}
+
+export type NivelRisco = 'critico' | 'alto' | 'medio' | 'baixo';
+
+export interface Risco {
+  nivel: NivelRisco;
+  titulo: string;
+  descricao: string;
+  pontosPerdidos: number;
+  lacunas: Lacuna[];
+  urgencia: string;
+}
+
 export interface Lead {
   placeId: string;
   nome: string;
@@ -41,6 +61,7 @@ export interface Lead {
   faturamentoEstimado: number;
   redesSociais: RedesSociais;
   qualificacao: Qualificacao;
+  risco: Risco;
   cnpj?: string;
   fonte: 'google_places' | 'nominatim';
 }

@@ -7,7 +7,7 @@ import axios from 'axios';
 import { buscarEstabelecimentos as buscarGoogle } from '../services/googlePlaces.service.js';
 import { buscarEstabelecimentos as buscarNominatim } from '../services/nominatim.service.js';
 import { scraparRedesSociais } from '../services/scraping.service.js';
-import { calcularScore, estimarFaturamento } from '../services/scoring.service.js';
+import { calcularScore, estimarFaturamento, calcularRiscoDigital } from '../services/scoring.service.js';
 import pLimit from 'p-limit';
 
 // Máximo de scraping paralelo para não sobrecarregar
@@ -63,11 +63,12 @@ export async function buscarLeads(req, res) {
     )
   );
 
-  // 4. Estimar faturamento e calcular score
+  // 4. Estimar faturamento, calcular score e classificar risco digital
   leads = leads.map((lead) => {
     const faturamentoEstimado = estimarFaturamento(lead);
     const qualificacao = calcularScore({ ...lead, faturamentoEstimado });
-    return { ...lead, faturamentoEstimado, qualificacao };
+    const risco = calcularRiscoDigital({ ...lead, faturamentoEstimado }, nicho);
+    return { ...lead, faturamentoEstimado, qualificacao, risco };
   });
 
   // 5. Filtros opcionais
@@ -86,8 +87,8 @@ export async function buscarLeads(req, res) {
     leads = leads.filter((l) => l.website);
   }
 
-  // 6. Ordena por score decrescente
-  leads.sort((a, b) => b.qualificacao.score - a.qualificacao.score);
+  // 6. Ordena por pontos de risco perdidos decrescente (maior risco = maior oportunidade primeiro)
+  leads.sort((a, b) => b.risco.pontosPerdidos - a.risco.pontosPerdidos);
 
   res.json({ leads, total: leads.length, fonte });
 }

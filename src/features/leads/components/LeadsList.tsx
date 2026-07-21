@@ -71,14 +71,34 @@ export const LeadsList: React.FC<Props> = ({ leads, loading, error, searched, to
   return (
     <div>
       {/* Header de resultados */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-sm text-gray-400">
-          <span className="text-white font-semibold">{total}</span> leads encontrados
-          {fonte && (
-            <span className="ml-2 text-xs px-2 py-0.5 rounded-full border border-gray-700 bg-gray-900">
-              via {fonte === 'google_places' ? '🟢 Google Places' : '🔵 OpenStreetMap'}
-            </span>
-          )}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-sm text-gray-400">
+            <span className="text-white font-semibold">{total}</span> leads encontrados
+            {fonte && (
+              <span className="ml-2 text-xs px-2 py-0.5 rounded-full border border-gray-700 bg-gray-900">
+                via {fonte === 'google_places' ? '🟢 Google Places' : '🔵 OpenStreetMap'}
+              </span>
+            )}
+          </span>
+        </div>
+
+        {/* Resumo de risco */}
+        <div className="flex items-center gap-2 text-xs">
+          {[
+            { nivel: 'critico', label: 'Crítico', cor: 'bg-red-500/15 text-red-400 border-red-500/30' },
+            { nivel: 'alto',    label: 'Alto',    cor: 'bg-orange-500/15 text-orange-400 border-orange-500/30' },
+            { nivel: 'medio',   label: 'Médio',   cor: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
+            { nivel: 'baixo',   label: 'Baixo',   cor: 'bg-green-500/15 text-green-400 border-green-500/30' },
+          ].map(({ nivel, label, cor }) => {
+            const count = leads.filter(l => l.risco?.nivel === nivel).length;
+            if (count === 0) return null;
+            return (
+              <span key={nivel} className={`px-2 py-1 rounded-full border font-semibold ${cor}`}>
+                {count} {label}
+              </span>
+            );
+          })}
         </div>
       </div>
 
