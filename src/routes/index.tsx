@@ -1,9 +1,9 @@
-import { createRoute, useNavigate } from '@tanstack/react-router'
+import { createRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useState } from 'react';
 import { Wizard } from '../components/proposal/Wizard';
 import { fromTemplate, templates } from '../lib/proposal';
 import { useProposals } from '../store/useProposals';
-import { TrendingUp, Target, Scale, Stethoscope, Code2, Rocket } from 'lucide-react';
+import { TrendingUp, Target, Scale, Stethoscope, Code2, Rocket, Users } from 'lucide-react';
 import { rootRoute } from './__root';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -87,6 +87,13 @@ function Home() {
           >
             Nova proposta
           </button>
+          <Link
+            to="/leads"
+            className="flex items-center gap-2 border border-amber-500/50 text-amber-400 hover:bg-amber-500/10 px-8 py-3 rounded-xl font-semibold transition"
+          >
+            <Users size={16} />
+            Buscar Leads
+          </Link>
           <button
             onClick={() => setWizardOpen(true)}
             className="text-gray-400 underline hover:text-white"

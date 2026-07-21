@@ -4,6 +4,8 @@ import { compressImageToDataUrl } from "../../lib/image";
 import { useProposals } from "../../store/useProposals";
 import { ChevronDown, ChevronRight, Plus, X, ArrowLeft, Save } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { ServiceSelector } from "../../features/proposals/components/ServiceSelector";
+import { servicesCatalog, CatalogItem } from "../../features/proposals/data/servicesCatalog";
 
 interface Props {
   proposal: Proposal;
@@ -386,6 +388,40 @@ export const EditorPanel: React.FC<Props> = ({ proposal }) => {
             </div>
           ))}
         </div>
+      </Group>
+
+      <Group label="Catálogo de Serviços">
+        <p className="text-xs text-gray-500 -mt-1 mb-3">
+          Selecione serviços do catálogo para adicioná-los ao Value Stack automaticamente.
+        </p>
+        <ServiceSelector
+          catalogo={servicesCatalog}
+          selecionados={proposal.deliverables
+            .filter((d) => d.id.startsWith('cat_'))
+            .map((d) => d.id.replace('cat_', ''))}
+          onToggle={(catalogId: string) => {
+            const item: CatalogItem | undefined = servicesCatalog.find((s) => s.id === catalogId);
+            if (!item) return;
+            const delivId = `cat_${catalogId}`;
+            const jaExiste = proposal.deliverables.some((d) => d.id === delivId);
+            if (jaExiste) {
+              set({ deliverables: proposal.deliverables.filter((d) => d.id !== delivId) });
+            } else {
+              set({
+                deliverables: [
+                  ...proposal.deliverables,
+                  {
+                    id: delivId,
+                    title: item.nome,
+                    desc: item.desc,
+                    value: item.valorSugerido,
+                    bonus: !!item.bonus,
+                  },
+                ],
+              });
+            }
+          }}
+        />
       </Group>
 
       <Group label="Value Stack">
